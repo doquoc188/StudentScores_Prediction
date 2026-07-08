@@ -251,15 +251,15 @@ Dự án này được cấp phép dưới giấy phép MIT. Xem tệp [LICENSE]
 
 ## 👤 Tác giả
 
-- **Tên:** Tùy chỉnh
-- **GitHub:** [Your GitHub Profile](https://github.com/yourusername)
-- **Email:** your.email@example.com
+- **Tên:** Đỗ Trọng Quốc
+- **GitHub:** [Your GitHub Profile](https://github.com/doquoc188)
+- **Email:** dotrongquoc1808@gmail.com
 
 ## 📞 Liên hệ & Hỗ trợ
 
 Nếu bạn có bất kỳ câu hỏi hoặc gặp vấn đề, vui lòng:
 - Tạo một Issue trên GitHub
-- Gửi email đến: your.email@example.com
+- Gửi email đến: dotrongquoc1808@gmail.com
 
 ## 📝 Lịch sử Thay đổi
 
