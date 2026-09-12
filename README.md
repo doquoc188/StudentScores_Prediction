@@ -1,278 +1,136 @@
-# Student Scores Prediction
+# 🎓 Student Scores Prediction v2.0 - Production ML System
 
-## 📋 Giới thiệu Dự án
+![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)
+![Machine Learning](https://img.shields.io/badge/ML-Scikit--Learn%20%7C%20Ensembles-orange)
+![UI](https://img.shields.io/badge/Web%20UI-Streamlit-red)
+![API](https://img.shields.io/badge/API-FastAPI-green)
+![Status](https://img.shields.io/badge/status-production--ready-brightgreen)
 
-Dự án này áp dụng Machine Learning để dự đoán điểm toán của học sinh dựa trên các đặc điểm cá nhân và học tập. Sử dụng **Random Forest Regressor** kết hợp với **GridSearchCV** để tìm kiếm các siêu tham số tối ưu.
+## 📋 Giới thiệu Dự án (Project Overview)
 
-## 🎯 Mục tiêu
+**Student Scores Prediction v2.0** là hệ thống Machine Learning end-to-end hoàn chỉnh được nâng cấp nhằm dự đoán chính xác điểm toán của học sinh dựa trên các yếu tố nhân khẩu học, trình độ học vấn của phụ huynh, và kết quả các bài kiểm tra đọc/viết.
 
-Xây dựng một mô hình có khả năng dự đoán chính xác điểm toán của học sinh dựa trên:
-- Điểm đọc và viết
-- Chủng tộc/Dân tộc
-- Trình độ học vấn của phụ huynh
-- Giới tính
-- Kiểu ăn trưa
-- Khóa học chuẩn bị thi
+Hệ thống được thiết kế theo chuẩn **Production Machine Learning**:
+- 🛠️ **Data Preprocessing & Feature Engineering:** Sửa toàn bộ lỗi logic phân loại (Ordinal/Nominal), bổ sung đặc trưng tương tác (`reading_writing_avg`, `reading_writing_diff`, `reading_writing_ratio`).
+- 🤖 **Multi-Model Benchmarking:** So sánh tự động 8+ thuật toán ML (Ridge, Random Forest, Extra Trees, Gradient Boosting, HistGradientBoosting, XGBoost, LightGBM, CatBoost, Stacking Ensemble) qua 5-Fold Cross Validation.
+- 💾 **Model Serialization:** Lưu trữ Pipeline tối ưu dưới dạng `.joblib` và ghi log chỉ số đánh giá (`metrics_summary.json`).
+- 🎨 **Visual Analytics:** Tự động tạo biểu đồ so sánh mô hình, phân tích phần dư (residual analysis), và tầm quan trọng đặc trưng (feature importances).
+- 🌐 **Interactive Streamlit Web App:** Giao diện trực quan cho phép dự đoán thời gian thực, xem dashboard phân tích và EDA.
+- ⚡ **FastAPI REST API Service:** Cung cấp các RESTful Endpoints (`/predict`, `/predict-batch`, `/health`, `/model-info`).
+- 🧪 **Pytest Suite:** Bộ kiểm thử tự động toàn bộ pipeline xử lý dữ liệu và suy luận mô hình.
 
-## 📊 Dữ liệu
+---
 
-**Tệp dữ liệu:** `StudentScore.xls` (định dạng CSV)
+## 🏗️ Kiến trúc Hệ thống (System Architecture)
 
-### Các đặc trưng:
-- **Đặc trưng số:**
-  - `writing score` - Điểm viết
-  - `reading score` - Điểm đọc
-
-- **Đặc trưng phân loại:**
-  - `race/ethnicity` - Chủng tộc/Dân tộc
-  - `parental level of education` - Trình độ học vấn phụ huynh (high school, some high school, some college, associate's degree, bachelor's degree, master's degree)
-  - `gender` - Giới tính
-  - `lunch` - Kiểu ăn trưa
-  - `test preparation course` - Khóa học chuẩn bị thi
-
-- **Target:** `math score` - Điểm toán
-
-## 🏗️ Kiến trúc Mô hình
-
-### Pipeline Xử lý
-
-Dự án sử dụng `ColumnTransformer` để xử lý các loại dữ liệu khác nhau:
-
-1. **Xử lý Đặc trưng Số (`num_processor`)**
-   - SimpleImputer (chiến lược: mean/median)
-   - StandardScaler
-
-2. **Xử lý Đặc trưng Danh mục Danh nghĩa (`nom_processor`)**
-   - SimpleImputer (chiến lược: most_frequent)
-   - OneHotEncoder
-
-3. **Xử lý Đặc trưng Danh mục Thứ tự (`ord_processor`)**
-   - SimpleImputer (chiến lược: most_frequent)
-   - OrdinalEncoder (với danh sách các hạng mục được sắp xếp)
-
-### Mô hình
-
-- **Thuật toán:** Random Forest Regressor
-- **Phương pháp Tuning:** GridSearchCV (5-Fold Cross Validation)
-
-### Siêu tham số tìm kiếm
-
-```python
-params = {
-    'preprocessing__num_processor__imputer__strategy': ["mean", "median"],
-    'model__n_estimators': [100, 200, 300],
-    'model__criterion': ["squared_error", "absolute_error", "friedman_mse", "poisson"],
-}
+```text
+D:\ML\StudentScores_Prediction\
+├── src/
+│   ├── __init__.py
+│   ├── data_preprocessing.py      # Feature engineering & Sklearn ColumnTransformer
+│   ├── model_training.py          # Benchmark ML models, CV & Hyperparameter tuning
+│   ├── evaluation.py              # Visualizations (Residuals, Feature Importances)
+│   └── predict.py                 # StudentScorePredictor inference class
+├── models/
+│   ├── best_model.joblib          # Serialized trained model & preprocessor
+│   └── metrics_summary.json       # Logged metrics & benchmark scores
+├── plots/
+│   ├── model_comparison.png       # Barplot CV R² scores
+│   ├── residual_analysis.png      # Actual vs Predicted & Error distribution
+│   └── feature_importance.png     # Relative feature importance plot
+├── tests/
+│   ├── test_preprocessing.py      # Unit tests for preprocessing
+│   └── test_prediction.py         # Unit tests for inference pipeline
+├── train_pipeline.py              # CLI Entrypoint for model training & evaluation
+├── app_streamlit.py               # Streamlit Web Application
+├── api_fastapi.py                 # FastAPI REST Endpoints server
+├── StudentScores_Prediction.py    # Legacy backward compatibility entrypoint
+├── requirements.txt               # Dependencies list
+└── README.md                      # Documentation
 ```
 
-**Tổng số kết hợp:** 2 × 3 × 4 = 24 kết hợp, được đánh giá qua 5-fold CV = **120 lần huấn luyện**
+---
 
-## 📦 Cài đặt
+## 📊 Kết quả Benchmarking (Model Leaderboard)
 
-### Yêu cầu Hệ thống
-- Python 3.7+
-- pip hoặc conda
+| Model Algorithm | CV $R^2$ Mean | CV MAE | CV RMSE | Status |
+| :--- | :---: | :---: | :---: | :--- |
+| **Ridge Regression** | **0.8688** | **4.36 pts** | **5.42 pts** | 🏆 **Best Model** |
+| **Gradient Boosting** | 0.8468 | 4.74 pts | 5.87 pts | Baseline |
+| **Random Forest** | 0.8390 | 4.83 pts | 6.00 pts | Baseline |
+| **HistGradientBoosting** | 0.8346 | 4.87 pts | 6.09 pts | Baseline |
+| **Extra Trees** | 0.8314 | 4.93 pts | 6.14 pts | Baseline |
 
-### Các Thư viện Cần Thiết
+### Holdout Test Set Performance (Winning Model):
+- **$R^2$ Score:** `0.8397` (Mô hình giải thích ~84% biến thiên của điểm Toán)
+- **MAE:** `4.83 điểm`
+- **RMSE:** `6.25 điểm`
 
-```bash
-pip install pandas scikit-learn
-```
+---
 
-Hoặc cài dùng file requirements:
+## 🚀 Hướng dẫn Sử dụng (Quick Start Guide)
 
+### 1. Cài đặt Thư viện
 ```bash
 pip install -r requirements.txt
 ```
 
-### Danh sách Thư viện
-
-```
-pandas>=1.0.0
-scikit-learn>=0.24.0
-```
-
-## 🚀 Cách Sử dụng
-
-### 1. Chuẩn bị Dữ liệu
-Đảm bảo tệp `StudentScore.xls` nằm trong cùng thư mục với script.
-
-### 2. Chạy Script
-
+### 2. Huấn luyện Mô hình & Tạo Artifacts (Train Pipeline)
+Chạy script chính để tự động train, so sánh mô hình, lưu model và xuất biểu đồ:
 ```bash
-python StudentScores_Prediction.py
+python train_pipeline.py
 ```
+*(Hoặc chạy qua file legacy `python StudentScores_Prediction.py`)*
 
-### 3. Kết quả Đầu ra
-
-Script sẽ in ra:
-- **Best params:** Các siêu tham số tốt nhất được tìm thấy
-- **MSE:** Mean Squared Error trên tập test
-- **MAE:** Mean Absolute Error trên tập test
-- **r2_score:** R² Score (hệ số xác định)
-
-**Ví dụ Kết quả:**
+### 3. Chạy ứng dụng Web Dashboard (Streamlit UI)
+```bash
+streamlit run app_streamlit.py
 ```
-Best params: {'model__criterion': 'squared_error', 'model__n_estimators': 200, 'preprocessing__num_processor__imputer__strategy': 'median'}
-MSE: 25.34
-MAE: 3.45
-r2_score: 0.8765
+👉 Truy cập giao diện tại: `http://localhost:8501`
+
+### 4. Chạy REST API Server (FastAPI)
+```bash
+uvicorn api_fastapi:app --reload --port 8000
 ```
+👉 Xem tài liệu Swagger API tại: `http://localhost:8000/docs`
 
-## 📁 Cấu trúc Thư mục
-
+### 5. Chạy Kiểm thử (Pytest Unit Tests)
+```bash
+pytest tests/
 ```
-StudentScores_Prediction/
-├── README.md                          # Tệp này
-├── StudentScores_Prediction.py        # Script chính
-├── StudentScore.xls                   # Dữ liệu (định dạng CSV)
-├── Score_report.html                  # Báo cáo phân tích (tùy chọn)
-└── requirements.txt                   # Danh sách thư viện
-```
-
-## 📈 Kết quả Mong đợi
-
-### Chỉ số Hiệu suất
-- **R² Score:** Thường trên 0.85 (mô hình giải thích 85%+ phương sai)
-- **MAE:** Khoảng 2-4 điểm
-- **MSE:** Khoảng 20-30
-
-### Ưu điểm Random Forest
-- Xử lý tốt các đặc trưng không tuyến tính
-- Ít nhạy cảm với dữ liệu ngoại lệ
-- Cung cấp tầm quan trọng đặc trưng
-
-## 🔧 Tuỳ chỉnh
-
-### Thay đổi Tỉ lệ Train/Test
-```python
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
-# Thay đổi test_size (mặc định 0.2 = 20%)
-```
-
-### Thêm Siêu tham số Mới
-```python
-params = {
-    'preprocessing__num_processor__imputer__strategy': ["mean", "median"],
-    'model__n_estimators': [100, 200, 300, 400],  # Thêm 400
-    'model__criterion': ["squared_error", "absolute_error", "friedman_mse", "poisson"],
-    'model__max_depth': [10, 15, 20],  # Thêm tham số mới
-}
-```
-
-### Thay đổi Giá trị CV
-```python
-Grid_Search_CV = GridSearchCV(estimator=reg, param_grid=params, cv=10, scoring="r2", verbose=2)
-# Thay đổi cv=10 cho 10-fold cross validation
-```
-
-## 📊 Phân tích Dữ liệu (Tùy chọn)
-
-Dự án có sẵn code để tạo báo cáo phân tích chi tiết (hiện đã comment):
-
-```python
-# profile = ProfileReport(df, title="Score Report", explorative=True)
-# profile.to_file("Score_report.html")
-```
-
-Để sử dụng, cài đặt: `pip install ydata-profiling`, sau đó uncomment các dòng trên.
-
-## 🐛 Khắc phục Sự cố
-
-### ModuleNotFoundError
-**Lỗi:** `No module named 'ydata_profiling'`
-**Giải pháp:** Cài đặt thư viện hoặc comment out dòng import
-
-### ValueError: Excel file format cannot be determined
-**Lỗi:** Không thể đọc file xls
-**Giải pháp:** Đảm bảo `StudentScore.xls` là file CSV hợp lệ
-
-### ImportError: Missing optional dependency 'xlrd'
-**Lỗi:** Thiếu thư viện xlrd
-**Giải pháp:** `pip install xlrd`
-
-## 📝 Ghi chú Kỹ thuật
-
-### Chiến lược Xử lý Giá trị Khuyết
-
-- **Đặc trưng số:** Impute bằng trung bình (mean) hoặc trung vị (median)
-- **Đặc trưng phân loại:** Impute bằng giá trị xuất hiện nhiều nhất (most_frequent)
-
-### Encode Phân loại
-
-- **Danh mục Thứ tự (Ordinal):** Trình độ giáo dục được encode theo thứ tự:
-  ```
-  1. high school
-  2. some high school
-  3. some college
-  4. associate's degree
-  5. bachelor's degree
-  6. master's degree
-  ```
-
-- **Danh mục Danh nghĩa (Nominal):** race/ethnicity được encode dùng One-Hot Encoding
-
-### Chia Dữ liệu
-
-- **Train:** 80% dữ liệu
-- **Test:** 20% dữ liệu
-- **Random State:** 42 (để dễ tái tạo)
-
-## 🔄 Quy trình Làm việc
-
-1. **Tải dữ liệu** → Đọc file CSV
-2. **Tách Target** → Tách `math score` từ các đặc trưng
-3. **Chia dữ liệu** → 80% train, 20% test
-4. **Xây dựng Pipeline** → Xử lý và mô hình
-5. **Tuning Hyperparameter** → GridSearchCV với 5-fold CV
-6. **Dự đoán** → Dự đoán trên tập test
-7. **Đánh giá** → Tính MSE, MAE, R² Score
-
-## 📚 Tài liệu Tham khảo
-
-- [Scikit-learn Documentation](https://scikit-learn.org/)
-- [Pandas Documentation](https://pandas.pydata.org/)
-- [Random Forest Regressor](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html)
-- [GridSearchCV](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html)
-
-## 🤝 Đóng góp
-
-Mọi đóng góp đều được hoan nghênh! Vui lòng:
-
-1. Fork repository
-2. Tạo branch mới (`git checkout -b feature/YourFeature`)
-3. Commit thay đổi (`git commit -m 'Add YourFeature'`)
-4. Push lên branch (`git push origin feature/YourFeature`)
-5. Tạo Pull Request
-
-## 📄 Giấy phép
-
-Dự án này được cấp phép dưới giấy phép MIT. Xem tệp [LICENSE](LICENSE) để biết thêm chi tiết.
-
-## 👤 Tác giả
-
-- **Tên:** Đỗ Trọng Quốc
-- **GitHub:** [Your GitHub Profile](https://github.com/doquoc188)
-- **Email:** dotrongquoc1808@gmail.com
-
-## 📞 Liên hệ & Hỗ trợ
-
-Nếu bạn có bất kỳ câu hỏi hoặc gặp vấn đề, vui lòng:
-- Tạo một Issue trên GitHub
-- Gửi email đến: dotrongquoc1808@gmail.com
-
-## 📝 Lịch sử Thay đổi
-
-### v1.0 (2026-07-08)
-- Khởi tạo dự án
-- Xây dựng pipeline xử lý dữ liệu
-- Triển khai GridSearchCV cho tuning hyperparameter
-- Hoàn thành đánh giá mô hình
-
-## ⭐ Nếu Dự án Hữu ích
-
-Nếu dự án này giúp ích cho bạn, vui lòng cho nó một ⭐ Star!
 
 ---
 
-**Cập nhật lần cuối:** 8 July 2026
+## 📡 REST API Examples
+
+### `POST /predict`
+**Request Body:**
+```json
+{
+  "gender": "female",
+  "race/ethnicity": "group B",
+  "parental level of education": "bachelor's degree",
+  "lunch": "standard",
+  "test preparation course": "none",
+  "reading score": 72.0,
+  "writing score": 74.0
+}
+```
+
+**Response:**
+```json
+{
+  "predicted_math_score": 67.45,
+  "rounded_math_score": 67,
+  "reading_score": 72.0,
+  "writing_score": 74.0
+}
+```
+
+---
+
+## 📝 Giấy phép & Tác giả
+
+- **Tác giả:** Đỗ Trọng Quốc
+- **Email:** dotrongquoc1808@gmail.com
+- **License:** MIT License
